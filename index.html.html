@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misi Penjelajahan Imbuhan Apitan - Bahasa Melayu Tahun 4</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Fredoka', 'Quicksand', sans-serif;
+      background: #0f172a;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .bg-adventure {
+      background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 100%);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 3px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-3d {
+      transition: all 0.15s ease-out;
+      transform: translateY(0);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-3d:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+      border-bottom: 4px solid #047857;
+    }
+
+    .btn-amber {
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      border-bottom: 4px solid #b45309;
+    }
+
+    .btn-rose {
+      background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
+      border-bottom: 4px solid #be123c;
+    }
+
+    .btn-indigo {
+      background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+      border-bottom: 4px solid #3730a3;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(1deg); }
+    }
+
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6)); }
+      50% { filter: drop-shadow(0 0 28px rgba(251, 191, 36, 0.95)); }
+    }
+
+    .glow-gold {
+      animation: pulse-glow 2.5s infinite;
+    }
+
+    .word-slot {
+      min-width: 110px;
+      min-height: 54px;
+      border: 3px dashed #cbd5e1;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .word-slot.filled {
+      border-style: solid;
+      border-color: #6366f1;
+      background: #e0e7ff;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 bg-adventure flex flex-col justify-between overflow-x-hidden">
+
+  <!-- Header Bar -->
+  <header class="w-full max-w-6xl mx-auto p-4 flex items-center justify-between relative z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-amber-200 flex items-center justify-center text-2xl text-slate-900 font-black shadow-lg">
+        <i class="fa-solid fa-compass text-amber-900"></i>
+      </div>
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide leading-none">MISI PENJELAJAHAN</h1>
+        <p class="text-xs md:text-sm text-amber-300 font-semibold">Kata Berimbuhan Apitan • BM Tahun 4</p>
+      </div>
+    </div>
+
+    <!-- Status Stats -->
+    <div id="topStats" class="hidden flex items-center gap-2 md:gap-4 bg-slate-900/80 border border-slate-700/80 px-4 py-2 rounded-2xl shadow-lg">
+      <div class="flex items-center gap-1.5 text-amber-400 font-extrabold text-sm md:text-base">
+        <i class="fa-solid fa-star text-lg"></i>
+        <span id="scoreText">0</span>
+      </div>
+      <div class="w-px h-5 bg-slate-700"></div>
+      <div class="flex items-center gap-1.5 text-emerald-400 font-extrabold text-sm md:text-base">
+        <i class="fa-solid fa-gem text-lg"></i>
+        <span id="gemCount">0/4</span>
+      </div>
+      <div class="w-px h-5 bg-slate-700"></div>
+      <button onclick="toggleAudioMute()" id="muteBtn" class="text-slate-300 hover:text-white text-lg p-1">
+        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-2 flex items-center justify-center relative z-10">
+    
+    <!-- SCREEN 1: SPLASH & AVATAR SELECTION -->
+    <section id="splashScreen" class="w-full glass-panel rounded-3xl p-6 md:p-10 text-center animate-float my-auto">
+      <div class="inline-block bg-amber-100 border border-amber-300 text-amber-800 text-xs md:text-sm font-extrabold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider">
+        <i class="fa-solid fa-map-marked-alt mr-1.5"></i> Cabaran Bahasa Melayu Interaktif
+      </div>
+      
+      <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-3 leading-tight">
+        Pengembaraan <span class="text-indigo-600">Pulau Imbuhan!</span>
+      </h2>
+      <p class="text-slate-600 text-base md:text-lg max-w-2xl mx-auto mb-8 font-medium">
+        Bantu kapten pengembara menewaskan raksasa kekeliruan tatabahasa! Kumpul 4 Permata Ilmu dengan menguasai imbuhan <b class="text-rose-600">meN-...-kan/-i</b>, <b class="text-amber-600">ke-...-an</b>, <b class="text-sky-600">peN-...-an</b>, dan <b class="text-emerald-600">di-...-kan/-i</b>.
+      </p>
+
+      <!-- Avatar Picker -->
+      <div class="mb-8">
+        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Pilih Pengembara Anda:</p>
+        <div class="flex justify-center gap-6">
+          <button onclick="selectAvatar('adam')" id="avatarAdam" class="avatar-card p-4 rounded-2xl border-4 border-indigo-500 bg-indigo-50/80 transition-all transform hover:scale-105 focus:outline-none w-36 text-center shadow-md">
+            <div class="w-20 h-20 bg-indigo-200 rounded-full mx-auto flex items-center justify-center text-4xl mb-2 shadow-inner">
+              👦🏻
+            </div>
+            <span class="font-bold text-slate-800 block text-base">Adam</span>
+            <span class="text-xs text-indigo-600 font-semibold">Kapten Berani</span>
+          </button>
+
+          <button onclick="selectAvatar('maya')" id="avatarMaya" class="avatar-card p-4 rounded-2xl border-4 border-transparent bg-slate-100 hover:bg-rose-50 transition-all transform hover:scale-105 focus:outline-none w-36 text-center">
+            <div class="w-20 h-20 bg-rose-200 rounded-full mx-auto flex items-center justify-center text-4xl mb-2 shadow-inner">
+              👧🏽
+            </div>
+            <span class="font-bold text-slate-800 block text-base">Maya</span>
+            <span class="text-xs text-rose-600 font-semibold">Pakar Bijak</span>
+          </button>
+        </div>
+      </div>
+
+      <button onclick="startGame()" class="btn-3d btn-emerald text-white text-xl font-black px-10 py-4 rounded-2xl shadow-xl hover:brightness-110 active:scale-95 transition-all">
+        <i class="fa-solid fa-play mr-2"></i> MULA PENJELAJAHAN
+      </button>
+    </section>
+
+    <!-- SCREEN 2: EXPLORATION MAP -->
+    <section id="mapScreen" class="hidden w-full glass-panel rounded-3xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row items-center justify-between mb-6 pb-4 border-b border-slate-200 gap-3">
+        <div>
+          <h3 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-map text-amber-500"></i> Peta Misi Pulau Imbuhan
+          </h3>
+          <p class="text-slate-500 text-sm font-semibold">Pilih Zon untuk memulakan cabaran dan mengumpul Permata Ilmu!</p>
+        </div>
+        <div id="playerBadge" class="flex items-center gap-3 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl">
+          <span id="playerAvatarIcon" class="text-2xl">👦🏻</span>
+          <div class="text-left">
+            <p id="playerName" class="font-black text-slate-800 text-sm leading-tight">Adam</p>
+            <p class="text-xs text-amber-700 font-bold">Wira Penjelajah</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Island Map Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        
+        <!-- Zone 1 -->
+        <div id="zoneCard1" class="relative group rounded-2xl p-5 border-3 border-rose-300 bg-gradient-to-b from-rose-50 to-rose-100/60 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="launchZone(1)">
+          <div class="flex justify-between items-start mb-3">
+            <span class="w-10 h-10 rounded-xl bg-rose-500 text-white font-extrabold flex items-center justify-center text-lg shadow">1</span>
+            <span id="gemZone1" class="text-2xl opacity-30 grayscale"><i class="fa-solid fa-gem text-rose-500"></i></span>
+          </div>
+          <div>
+            <h4 class="font-black text-lg text-rose-950 mb-1">Rimba Perbuatan</h4>
+            <p class="text-xs text-rose-700 font-semibold mb-3">Imbuhan meN-...-kan & meN-...-i</p>
+            <span class="inline-block text-xs font-extrabold text-rose-700 bg-rose-200/80 px-2.5 py-1 rounded-lg">5 Soalan</span>
+          </div>
+          <button class="mt-4 w-full btn-3d btn-rose text-white text-sm font-bold py-2 rounded-xl">
+            TEROKAI ZON
+          </button>
+        </div>
+
+        <!-- Zone 2 -->
+        <div id="zoneCard2" class="relative group rounded-2xl p-5 border-3 border-amber-300 bg-gradient-to-b from-amber-50 to-amber-100/60 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="launchZone(2)">
+          <div class="flex justify-between items-start mb-3">
+            <span class="w-10 h-10 rounded-xl bg-amber-500 text-white font-extrabold flex items-center justify-center text-lg shadow">2</span>
+            <span id="gemZone2" class="text-2xl opacity-30 grayscale"><i class="fa-solid fa-gem text-amber-500"></i></span>
+          </div>
+          <div>
+            <h4 class="font-black text-lg text-amber-950 mb-1">Lembah Keadaan</h4>
+            <p class="text-xs text-amber-700 font-semibold mb-3">Imbuhan ke-...-an</p>
+            <span class="inline-block text-xs font-extrabold text-amber-700 bg-amber-200/80 px-2.5 py-1 rounded-lg">5 Soalan</span>
+          </div>
+          <button class="mt-4 w-full btn-3d btn-amber text-white text-sm font-bold py-2 rounded-xl">
+            TEROKAI ZON
+          </button>
+        </div>
+
+        <!-- Zone 3 -->
+        <div id="zoneCard3" class="relative group rounded-2xl p-5 border-3 border-sky-300 bg-gradient-to-b from-sky-50 to-sky-100/60 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="launchZone(3)">
+          <div class="flex justify-between items-start mb-3">
+            <span class="w-10 h-10 rounded-xl bg-sky-500 text-white font-extrabold flex items-center justify-center text-lg shadow">3</span>
+            <span id="gemZone3" class="text-2xl opacity-30 grayscale"><i class="fa-solid fa-gem text-sky-500"></i></span>
+          </div>
+          <div>
+            <h4 class="font-black text-lg text-sky-950 mb-1">Kota Tempat</h4>
+            <p class="text-xs text-sky-700 font-semibold mb-3">Imbuhan peN-...-an</p>
+            <span class="inline-block text-xs font-extrabold text-sky-700 bg-sky-200/80 px-2.5 py-1 rounded-lg">5 Soalan</span>
+          </div>
+          <button class="mt-4 w-full btn-3d btn-indigo text-white text-sm font-bold py-2 rounded-xl">
+            TEROKAI ZON
+          </button>
+        </div>
+
+        <!-- Zone 4 -->
+        <div id="zoneCard4" class="relative group rounded-2xl p-5 border-3 border-emerald-300 bg-gradient-to-b from-emerald-50 to-emerald-100/60 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="launchZone(4)">
+          <div class="flex justify-between items-start mb-3">
+            <span class="w-10 h-10 rounded-xl bg-emerald-500 text-white font-extrabold flex items-center justify-center text-lg shadow">4</span>
+            <span id="gemZone4" class="text-2xl opacity-30 grayscale"><i class="fa-solid fa-gem text-emerald-500"></i></span>
+          </div>
+          <div>
+            <h4 class="font-black text-lg text-emerald-950 mb-1">Istana Pasif</h4>
+            <p class="text-xs text-emerald-700 font-semibold mb-3">Imbuhan di-...-kan & di-...-i</p>
+            <span class="inline-block text-xs font-extrabold text-emerald-700 bg-emerald-200/80 px-2.5 py-1 rounded-lg">5 Soalan</span>
+          </div>
+          <button class="mt-4 w-full btn-3d btn-emerald text-white text-sm font-bold py-2 rounded-xl">
+            TEROKAI ZON
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Final Vault Status -->
+      <div id="finalVaultBanner" class="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-400/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="text-4xl text-amber-500 glow-gold">👑</div>
+          <div>
+            <h4 class="font-black text-slate-800 text-lg">Peti Harta Karun Agung Imbuhan</h4>
+            <p class="text-xs text-slate-600 font-semibold">Kumpul kesemua 4 Permata Ilmu untuk membuka Sijil Wira Imbuhan!</p>
+          </div>
+        </div>
+        <button id="claimCertBtn" disabled onclick="showCertificate()" class="opacity-50 cursor-not-allowed btn-3d btn-amber text-slate-900 font-black px-6 py-2.5 rounded-xl text-sm whitespace-nowrap">
+          <i class="fa-solid fa-award mr-1.5"></i> TEBUS SIJIL WIRA
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: GAMEPLAY ZONE -->
+    <section id="gameplayScreen" class="hidden w-full max-w-3xl glass-panel rounded-3xl p-6 md:p-8 my-auto relative overflow-hidden">
+      
+      <!-- Top Zone Header Bar -->
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+        <div class="flex items-center gap-3">
+          <button onclick="returnToMap()" class="w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center transition">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div>
+            <span id="currentZoneBadge" class="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Zon 1</span>
+            <h3 id="currentZoneTitle" class="text-xl font-black text-slate-800 leading-tight">Rimba Perbuatan</h3>
+          </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <p class="text-xs font-bold text-slate-400 uppercase">Soalan</p>
+            <p id="questionProgressText" class="text-lg font-black text-slate-800">1 / 5</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Card Container -->
+      <div id="questionContainer" class="min-h-[280px] flex flex-col justify-between">
+        
+        <!-- Context Hint / Story snippet -->
+        <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+          <span class="text-2xl">💡</span>
+          <div>
+            <p id="questionHint" class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-0.5">Petunjuk Cabaran</p>
+            <p id="questionInstruction" class="text-sm font-semibold text-slate-700">Gabungkan kata dasar dengan imbuhan yang betul untuk melengkapkan ayat!</p>
+          </div>
+        </div>
+
+        <!-- Main Challenge Display Area -->
+        <div class="text-center my-4">
+          
+          <!-- Mode A: Word Builder Display -->
+          <div id="wordBuilderArea" class="hidden flex flex-wrap items-center justify-center gap-2 md:gap-3 my-6">
+            <div id="slotPrefix" class="word-slot text-lg md:text-xl font-black text-rose-600 bg-white">?</div>
+            <span class="text-2xl font-bold text-slate-400">+</span>
+            <div id="slotRoot" class="word-slot text-lg md:text-xl font-black text-slate-800 bg-amber-100 border-amber-400">kata</div>
+            <span class="text-2xl font-bold text-slate-400">+</span>
+            <div id="slotSuffix" class="word-slot text-lg md:text-xl font-black text-emerald-600 bg-white">?</div>
+            <span class="text-2xl font-bold text-slate-400">=</span>
+            <div id="resultWord" class="px-5 py-3 rounded-2xl bg-indigo-600 text-white font-black text-xl shadow-md min-w-[160px]">???</div>
+          </div>
+
+          <!-- Mode B: Sentence Prompt -->
+          <div id="sentenceArea" class="my-4">
+            <h4 id="sentenceText" class="text-xl md:text-2xl font-extrabold text-slate-800 leading-relaxed">
+              Murid-murid sedang <span class="text-indigo-600 underline underline-offset-8 decoration-wavy">[ _______ ]</span> bilik darjah.
+            </h4>
+          </div>
+
+        </div>
+
+        <!-- Options / Buttons Container -->
+        <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+          <!-- Dynamic Answer Buttons Rendered via JS -->
+        </div>
+
+      </div>
+
+      <!-- Explanation Feedback Bar -->
+      <div id="feedbackBar" class="hidden mt-6 p-4 rounded-2xl text-center font-bold transition-all">
+        <p id="feedbackText" class="text-base"></p>
+        <button id="nextQBtn" onclick="nextQuestion()" class="mt-3 btn-3d btn-emerald text-white text-sm font-black px-6 py-2 rounded-xl">
+          SOALAN SETERUSNYA <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- SCREEN 4: ZONE COMPLETE MODAL -->
+    <div id="zoneCompleteModal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="glass-panel w-full max-w-md rounded-3xl p-8 text-center animate-bounce-short">
+        <div class="w-20 h-20 rounded-full bg-amber-400 text-amber-900 font-black text-4xl flex items-center justify-center mx-auto mb-4 glow-gold">
+          <i class="fa-solid fa-gem"></i>
+        </div>
+        <h3 class="text-2xl font-black text-slate-900 mb-1">Tahniah! Permata Diperoleh!</h3>
+        <p id="modalZoneSubtitle" class="text-sm font-bold text-indigo-600 mb-4">Anda telah menguasai Rimba Perbuatan</p>
+
+        <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200 mb-6 flex justify-around">
+          <div>
+            <p class="text-xs text-amber-800 font-bold uppercase">Markah Zon</p>
+            <p id="modalZoneScore" class="text-2xl font-black text-amber-600">500</p>
+          </div>
+          <div class="w-px bg-amber-200"></div>
+          <div>
+            <p class="text-xs text-amber-800 font-bold uppercase">Ketepatan</p>
+            <p id="modalZoneAccuracy" class="text-2xl font-black text-emerald-600">100%</p>
+          </div>
+        </div>
+
+        <button onclick="closeZoneModal()" class="w-full btn-3d btn-emerald text-white text-lg font-black py-3 rounded-2xl">
+          KEMBALI KE PETA MISI
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 5: FINAL SIJIL WIRA -->
+    <section id="certScreen" class="hidden w-full max-w-3xl glass-panel rounded-3xl p-6 md:p-10 text-center relative my-auto">
+      <button onclick="returnToMap()" class="absolute top-6 left-6 w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="border-4 border-amber-400 border-dashed rounded-2xl p-6 md:p-8 bg-amber-50/50">
+        <div class="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 text-amber-950 shadow-md">
+          🏆
+        </div>
+        <p class="text-amber-800 text-xs font-black uppercase tracking-widest mb-1">SIJIL PENGHORMAAN PENJELAJAH</p>
+        <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-2">SIJIL WIRA IMBUHAN APITAN</h2>
+        <p class="text-slate-600 text-sm font-medium mb-6">Dengan ini diperakukan bahawa pengembara bijaksana:</p>
+        
+        <div class="inline-block border-b-4 border-indigo-600 px-8 py-2 mb-6">
+          <h3 id="certPlayerName" class="text-2xl md:text-3xl font-black text-indigo-700">Adam</h3>
+        </div>
+
+        <p class="text-slate-700 text-base max-w-lg mx-auto font-semibold mb-6">
+          Telah berjaya menyelesaikan kesemua 4 Zon Misi dan menguasai pembentukan Kata Berimbuhan Apitan Bahasa Melayu Tahun 4 dengan cemerlang!
+        </p>
+
+        <div class="flex justify-center items-center gap-6 mb-8 bg-white/80 p-4 rounded-xl border border-slate-200">
+          <div>
+            <p class="text-xs text-slate-400 font-bold">JUMLAH MARKAH</p>
+            <p id="certTotalScore" class="text-2xl font-black text-amber-500">2000</p>
+          </div>
+          <div class="w-px h-8 bg-slate-200"></div>
+          <div>
+            <p class="text-xs text-slate-400 font-bold">GELARAN WIRA</p>
+            <p class="text-lg font-black text-indigo-600">Pakar Apitan Unggul</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+          <button onclick="window.print()" class="btn-3d btn-indigo text-white font-black px-6 py-3 rounded-xl text-sm">
+            <i class="fa-solid fa-print mr-2"></i> CETAK SIJIL
+          </button>
+          <button onclick="resetGame()" class="btn-3d btn-amber text-slate-900 font-black px-6 py-3 rounded-xl text-sm">
+            <i class="fa-solid fa-rotate-right mr-2"></i> MAIN SEMULA
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full text-center py-3 text-xs text-slate-400 font-semibold relative z-20">
+    Bahasa Melayu Tahun 4 • Modul Interaktif Kata Berimbuhan Apitan
+  </footer>
+
+  <script>
+    /* Web Audio API Synthesizer for FX Sound Effects */
+    let audioCtx = null;
+    let isMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSound(type) {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'correct') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.2); // A5
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now); // A3
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.25); // A2
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'victory') {
+        // Simple chime sequence
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.frequency.setValueAtTime(freq, now + idx * 0.1);
+          g.gain.setValueAtTime(0.2, now + idx * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
+          o.start(now + idx * 0.1);
+          o.stop(now + idx * 0.1 + 0.25);
+        });
+      }
+    }
+
+    function toggleAudioMute() {
+      isMuted = !isMuted;
+      document.getElementById('soundIcon').className = isMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+    }
+
+    /* GAME QUESTION BANK FOR 4 ZONES */
+    const zoneData = {
+      1: {
+        title: "Rimba Perbuatan",
+        type: "meN-...-kan / meN-...-i",
+        color: "rose",
+        questions: [
+          {
+            type: "builder",
+            hint: "Bina kata berimbuhan apitan perbuatan aktif.",
+            prefix: "mem",
+            root: "bersih",
+            suffix: "kan",
+            correct: "membersihkan",
+            options: ["membersihkan", "pembersihan", "dibersihkan", "kebersihan"],
+            sentence: "Murid-murid bekerjasama [_______] kelas mereka supaya ceria.",
+            explain: "Imbuhan 'mem-...-kan' + 'bersih' menjadi 'membersihkan' (perbuatan aktif)."
+          },
+          {
+            type: "mcq",
+            hint: "Pilih kata berimbuhan apitan yang betul.",
+            sentence: "Siti [_______] ibunya sejambak bunga yang indah sempena Hari Ibu.",
+            correct: "menghadiahi",
+            options: ["menghadiahi", "hadiahan", "dihadiahi", "kehadiahan"],
+            explain: "'Menghadiahi' bermaksud memberikan hadiah kepada seseorang (objek bernyawa)."
+          },
+          {
+            type: "mcq",
+            hint: "Pilih apitan perbuatan yang tepat.",
+            sentence: "Pemain bola sepak itu cuba [_______] bola ke dalam jaring lawan.",
+            correct: "memasukkan",
+            options: ["memasukkan", "pemasukan", "dimasukkan", "kemasukan"],
+            explain: "'Memasukkan' berasal daripada kata dasar 'masuk' dengan apitan 'meN-...-kan'."
+          },
+          {
+            type: "mcq",
+            hint: "Lengkapkan ayat dengan imbuhan apitan yang sesuai.",
+            sentence: "Kita mestilah sentiasa [_______] nasihat kedua-dua ibu bapa.",
+            correct: "menghormati",
+            options: ["menghormati", "penghormatan", "dihormati", "kehormatan"],
+            explain: "'Menghormati' ialah perbuatan menaruh rasa hormat."
+          },
+          {
+            type: "mcq",
+            hint: "Analisis penggunaan imbuhan meN-...-kan.",
+            sentence: "Cikgu Mariam [_______] latihan Bahasa Melayu di papan tulis.",
+            correct: "menjalankan",
+            options: ["menjalankan", "penjalanan", "dijalankan", "jalanan"],
+            explain: "'Menjalankan' tugasan atau aktiviti menggunakan apitan 'meN-...-kan'."
+          }
+        ]
+      },
+      2: {
+        title: "Lembah Keadaan",
+        type: "ke-...-an",
+        color: "amber",
+        questions: [
+          {
+            type: "builder",
+            hint: "Bina kata berimbuhan apitan untuk menerangkan keadaan situasi.",
+            prefix: "ke",
+            root: "selamat",
+            suffix: "an",
+            correct: "keselamatan",
+            options: ["keselamatan", "menyelamatkan", "penyelamat", "diselamatkan"],
+            sentence: "Utamakan [_______] diri semasa melintas jalan raya yang sibuk.",
+            explain: "Apitan 'ke-...-an' + 'selamat' membentuk 'keselamatan' (keadaan selamat)."
+          },
+          {
+            type: "mcq",
+            hint: "Keadaan atau situasi badan.",
+            sentence: "Makanan yang berkhasiat amat penting untuk menjaga [_______] badan.",
+            correct: "kesihatan",
+            options: ["kesihatan", "menyehatkan", "penyehat", "disehatkan"],
+            explain: "'Kesihataan' merujuk kepada perihal/keadaan sihat."
+          },
+          {
+            type: "mcq",
+            hint: "Kenal pasti kata berimbuhan ke-...-an.",
+            sentence: "Bas sekolah merupakan [_______] utama bagi murid-murid Kampung Murni.",
+            correct: "kenderaan",
+            options: ["kenderaan", "mengendarai", "pengendara", "dikendarai"],
+            explain: "'Kenderaan' ialah bentuk apitan 'ke-...-an' bagi kata dasar 'endara'."
+          },
+          {
+            type: "mcq",
+            hint: "Lengkapkan ayat situasi kesakitan.",
+            sentence: "Budak itu menangis kerana berada dalam [_______] selepas terjatuh dari basikal.",
+            correct: "kesakitan",
+            options: ["kesakitan", "menyakitkan", "penyakit", "disakiti"],
+            explain: "'Kesakitan' menerangkan keadaan merasai sakit."
+          },
+          {
+            type: "mcq",
+            hint: "Pilih jawapan berkaitan keindahan alam.",
+            sentence: "Para pelancong kagum akan [_______] pemandangan di Pulau Tioman.",
+            correct: "keindahan",
+            options: ["keindahan", "mengindahkan", "pengindah", "diindahkan"],
+            explain: "'Keindahan' merujuk kepada sifat atau keadaan indah."
+          }
+        ]
+      },
+      3: {
+        title: "Kota Tempat",
+        type: "peN-...-an",
+        color: "sky",
+        questions: [
+          {
+            type: "builder",
+            hint: "Bina kata berimbuhan apitan merujuk tempat atau proses.",
+            prefix: "per",
+            root: "pustaka",
+            suffix: "an",
+            correct: "perpustakaan",
+            options: ["perpustakaan", "pustakawan", "menyediakan", "kepustakaan"],
+            sentence: "Aiman dan rakan-rakannya membaca buku di [_______] sekolah.",
+            explain: "Apitan 'peN-...-an' / 'per-...-an' merujuk tempat atau proses."
+          },
+          {
+            type: "mcq",
+            hint: "Merujuk kepada acara persembahan/pameran.",
+            sentence: "Sekolah kami mengadakan [_______] sains dan teknologi minggu lalu.",
+            correct: "pameran",
+            options: ["pameran", "memamerkan", "dipamerkan", "kepameran"],
+            explain: "'Pameran' (daripada 'peN-...-an' + 'pamer') ialah acara memperagakan sesuatu."
+          },
+          {
+            type: "mcq",
+            hint: "Proses mendaftar nama.",
+            sentence: "Sila buat [_______] nama di kaunter sebelum memasuki dewan.",
+            correct: "pendaftaran",
+            options: ["pendaftaran", "mendaftarkan", "didaftarkan", "kedaftaran"],
+            explain: "'Pendaftaran' merujuk perihal atau proses mendaftar."
+          },
+          {
+            type: "mcq",
+            hint: "Ilmu dan proses pengajaran.",
+            sentence: "Kerajaan sentiasa memartabatkan mutu [_______] di negara kita.",
+            correct: "pendidikan",
+            options: ["pendidikan", "mendidik", "dendidik", "kedidikan"],
+            explain: "'Pendidikan' ialah proses mendidik (kata dasar: didik)."
+          },
+          {
+            type: "mcq",
+            hint: "Merujuk hasil atau ikhtiar penyelesaian.",
+            sentence: "Guru memberikan [_______] bagi masalah matematik yang rumit itu.",
+            correct: "penyelesaian",
+            options: ["penyelesaian", "menyelesaikan", "diselesaikan", "keselesaian"],
+            explain: "'Penyelesaian' berasal daripada kata dasar 'selesai'."
+          }
+        ]
+      },
+      4: {
+        title: "Istana Pasif",
+        type: "di-...-kan / di-...-i",
+        color: "emerald",
+        questions: [
+          {
+            type: "builder",
+            hint: "Bina kata berimbuhan apitan ayat pasif.",
+            prefix: "di",
+            root: "bersih",
+            suffix: "kan",
+            correct: "dibersihkan",
+            options: ["dibersihkan", "membersihkan", "pembersihan", "kebersihan"],
+            sentence: "Bilik darjah itu [_______] oleh murid-murid setiap pagi.",
+            explain: "Ayat pasif menggunakan apitan 'di-...-kan' untuk menunjukkan tindakan diterima oleh subjek."
+          },
+          {
+            type: "mcq",
+            hint: "Bentuk ayat pasif perbuatan.",
+            sentence: "Buku cerita yang dipinjam itu telah [_______] ke dalam beg.",
+            correct: "dimasukkan",
+            options: ["dimasukkan", "memasukkan", "pemasukan", "kemasukan"],
+            explain: "'Dimasukkan' ialah imbuhan pasif daripada kata dasar 'masuk'."
+          },
+          {
+            type: "mcq",
+            hint: "Jasa dan pengorbanan guru.",
+            sentence: "Jasa dan pengorbanan guru sentiasa [_______] oleh para pelajar.",
+            correct: "dihargai",
+            options: ["dihargai", "menghargai", "penghargaan", "kehargaan"],
+            explain: "'Dihargai' menggunakan apitan pasif 'di-...-i'."
+          },
+          {
+            type: "mcq",
+            hint: "Ayat pasif penyampaian hadiah.",
+            sentence: "Hadiah kemenangan [_______] oleh Guru Besar kepada johan syarahan.",
+            correct: "disampaikan",
+            options: ["disampaikan", "menyampaikan", "penyampaian", "kesampaian"],
+            explain: "'Disampaikan' ialah imbuhan pasif bagi kata dasar 'sampai'."
+          },
+          {
+            type: "mcq",
+            hint: "Tindakan pasif terhadap tugasan.",
+            sentence: "Semua tugasan sekolah mestilah [_______] sebelum hari Isnin.",
+            correct: "disiapkan",
+            options: ["disiapkan", "menyiapkan", "penyiapan", "kesiapan"],
+            explain: "'Disiapkan' berasal daripada kata dasar 'siap'."
+          }
+        ]
+      }
+    };
+
+    /* GAME STATE VARIABLES */
+    let selectedAvatar = 'adam';
+    let totalScore = 0;
+    let unlockedZones = { 1: true, 2: true, 3: true, 4: true }; // All open for free play
+    let completedZones = { 1: false, 2: false, 3: false, 4: false };
+    let currentZone = 1;
+    let currentQuestionIdx = 0;
+    let currentZoneScore = 0;
+    let currentZoneCorrect = 0;
+
+    /* SELECTION LOGIC */
+    function selectAvatar(name) {
+      playSound('click');
+      selectedAvatar = name;
+      document.getElementById('avatarAdam').className = name === 'adam' ? 
+        "avatar-card p-4 rounded-2xl border-4 border-indigo-500 bg-indigo-50/80 transition-all transform hover:scale-105 focus:outline-none w-36 text-center shadow-md" :
+        "avatar-card p-4 rounded-2xl border-4 border-transparent bg-slate-100 hover:bg-rose-50 transition-all transform hover:scale-105 focus:outline-none w-36 text-center";
+      
+      document.getElementById('avatarMaya').className = name === 'maya' ? 
+        "avatar-card p-4 rounded-2xl border-4 border-rose-500 bg-rose-50/80 transition-all transform hover:scale-105 focus:outline-none w-36 text-center shadow-md" :
+        "avatar-card p-4 rounded-2xl border-4 border-transparent bg-slate-100 hover:bg-rose-50 transition-all transform hover:scale-105 focus:outline-none w-36 text-center";
+    }
+
+    function startGame() {
+      playSound('click');
+      document.getElementById('splashScreen').classList.add('hidden');
+      document.getElementById('mapScreen').classList.remove('hidden');
+      document.getElementById('topStats').classList.remove('hidden');
+      
+      // Update Avatar info
+      document.getElementById('playerAvatarIcon').innerText = selectedAvatar === 'adam' ? '👦🏻' : '👧🏽';
+      document.getElementById('playerName').innerText = selectedAvatar === 'adam' ? 'Adam' : 'Maya';
+      document.getElementById('certPlayerName').innerText = selectedAvatar === 'adam' ? 'Adam' : 'Maya';
+
+      updateMapUI();
+    }
+
+    function updateMapUI() {
+      let gemsCount = 0;
+      for (let z = 1; z <= 4; z++) {
+        if (completedZones[z]) {
+          gemsCount++;
+          document.getElementById(`gemZone${z}`).classList.remove('opacity-30', 'grayscale');
+          document.getElementById(`gemZone${z}`).classList.add('glow-gold');
+        }
+      }
+
+      document.getElementById('gemCount').innerText = `${gemsCount}/4`;
+      document.getElementById('scoreText').innerText = totalScore;
+
+      // Enable certificate if all gems collected
+      const claimBtn = document.getElementById('claimCertBtn');
+      if (gemsCount === 4) {
+        claimBtn.disabled = false;
+        claimBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        claimBtn.classList.add('glow-gold', 'animate-bounce');
+      }
+    }
+
+    function launchZone(zoneNum) {
+      playSound('click');
+      currentZone = zoneNum;
+      currentQuestionIdx = 0;
+      currentZoneScore = 0;
+      currentZoneCorrect = 0;
+
+      const zInfo = zoneData[zoneNum];
+      document.getElementById('mapScreen').classList.add('hidden');
+      document.getElementById('gameplayScreen').classList.remove('hidden');
+
+      document.getElementById('currentZoneBadge').innerText = `Zon ${zoneNum}`;
+      document.getElementById('currentZoneTitle').innerText = zInfo.title;
+
+      renderQuestion();
+    }
+
+    function returnToMap() {
+      playSound('click');
+      document.getElementById('gameplayScreen').classList.add('hidden');
+      document.getElementById('certScreen').classList.add('hidden');
+      document.getElementById('mapScreen').classList.remove('hidden');
+      updateMapUI();
+    }
+
+    function renderQuestion() {
+      const zInfo = zoneData[currentZone];
+      const q = zInfo.questions[currentQuestionIdx];
+
+      document.getElementById('questionProgressText').innerText = `${currentQuestionIdx + 1} / ${zInfo.questions.length}`;
+      document.getElementById('questionInstruction').innerText = q.hint;
+      document.getElementById('feedbackBar').classList.add('hidden');
+
+      const wordBuilderArea = document.getElementById('wordBuilderArea');
+      const sentenceArea = document.getElementById('sentenceArea');
+      const sentenceText = document.getElementById('sentenceText');
+      const optionsGrid = document.getElementById('optionsGrid');
+
+      optionsGrid.innerHTML = '';
+
+      if (q.type === 'builder') {
+        wordBuilderArea.classList.remove('hidden');
+        document.getElementById('slotPrefix').innerText = q.prefix + '-';
+        document.getElementById('slotRoot').innerText = q.root;
+        document.getElementById('slotSuffix').innerText = '-' + q.suffix;
+        document.getElementById('resultWord').innerText = '???';
+
+        sentenceText.innerHTML = q.sentence.replace('[_______]', `<span id="inlineBlank" class="text-indigo-600 underline font-black">[ ??? ]</span>`);
+      } else {
+        wordBuilderArea.classList.add('hidden');
+        sentenceText.innerHTML = q.sentence.replace('[_______]', `<span id="inlineBlank" class="text-indigo-600 underline font-black">[ _______ ]</span>`);
+      }
+
+      // Render Options
+      q.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = "btn-3d bg-white border-2 border-slate-200 hover:border-indigo-400 text-slate-800 text-base font-bold py-3 px-4 rounded-2xl shadow-sm text-center transition-all flex items-center justify-center gap-2";
+        btn.innerHTML = `<span>${opt}</span>`;
+        btn.onclick = () => checkAnswer(opt, q, btn);
+        optionsGrid.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedOpt, qData, btnEl) {
+      const allBtns = document.getElementById('optionsGrid').children;
+      for (let b of allBtns) {
+        b.disabled = true;
+        b.classList.add('opacity-60', 'cursor-not-allowed');
+      }
+
+      const isCorrect = (selectedOpt === qData.correct);
+      const feedbackBar = document.getElementById('feedbackBar');
+      const feedbackText = document.getElementById('feedbackText');
+
+      if (isCorrect) {
+        playSound('correct');
+        btnEl.classList.remove('bg-white', 'border-slate-200', 'opacity-60');
+        btnEl.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
+        
+        document.getElementById('inlineBlank').innerText = selectedOpt;
+        document.getElementById('inlineBlank').className = "text-emerald-600 font-black underline";
+        if (qData.type === 'builder') {
+          document.getElementById('resultWord').innerText = selectedOpt;
+          document.getElementById('resultWord').className = "px-5 py-3 rounded-2xl bg-emerald-500 text-white font-black text-xl shadow-md min-w-[160px]";
+        }
+
+        currentZoneScore += 100;
+        totalScore += 100;
+        currentZoneCorrect++;
+
+        feedbackBar.className = "mt-6 p-4 rounded-2xl text-center font-bold bg-emerald-100 border border-emerald-300 text-emerald-900";
+        feedbackText.innerText = "🎉 TEPAT! " + qData.explain;
+
+      } else {
+        playSound('wrong');
+        btnEl.classList.remove('bg-white', 'border-slate-200', 'opacity-60');
+        btnEl.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
+
+        feedbackBar.className = "mt-6 p-4 rounded-2xl text-center font-bold bg-rose-100 border border-rose-300 text-rose-900";
+        feedbackText.innerText = "❌ KURANG TEPAT. " + qData.explain;
+      }
+
+      document.getElementById('scoreText').innerText = totalScore;
+      feedbackBar.classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+      playSound('click');
+      const zInfo = zoneData[currentZone];
+      currentQuestionIdx++;
+
+      if (currentQuestionIdx < zInfo.questions.length) {
+        renderQuestion();
+      } else {
+        // Complete Zone
+        completedZones[currentZone] = true;
+        showZoneCompleteModal();
+      }
+    }
+
+    function showZoneCompleteModal() {
+      playSound('victory');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      document.getElementById('modalZoneSubtitle').innerText = `Anda telah menguasai ${zoneData[currentZone].title}!`;
+      document.getElementById('modalZoneScore').innerText = currentZoneScore;
+      document.getElementById('modalZoneAccuracy').innerText = `${Math.round((currentZoneCorrect / 5) * 100)}%`;
+
+      document.getElementById('zoneCompleteModal').classList.remove('hidden');
+    }
+
+    function closeZoneModal() {
+      playSound('click');
+      document.getElementById('zoneCompleteModal').classList.add('hidden');
+      returnToMap();
+    }
+
+    function showCertificate() {
+      playSound('victory');
+      confetti({
+        particleCount: 180,
+        spread: 100,
+        origin: { y: 0.5 }
+      });
+
+      document.getElementById('mapScreen').classList.add('hidden');
+      document.getElementById('certScreen').classList.remove('hidden');
+      document.getElementById('certTotalScore').innerText = totalScore;
+    }
+
+    function resetGame() {
+      playSound('click');
+      totalScore = 0;
+      completedZones = { 1: false, 2: false, 3: false, 4: false };
+      document.getElementById('scoreText').innerText = '0';
+      document.getElementById('gemCount').innerText = '0/4';
+      
+      for (let z = 1; z <= 4; z++) {
+        document.getElementById(`gemZone${z}`).classList.add('opacity-30', 'grayscale');
+        document.getElementById(`gemZone${z}`).classList.remove('glow-gold');
+      }
+
+      document.getElementById('claimCertBtn').disabled = true;
+      document.getElementById('claimCertBtn').className = "opacity-50 cursor-not-allowed btn-3d btn-amber text-slate-900 font-black px-6 py-2.5 rounded-xl text-sm whitespace-nowrap";
+
+      returnToMap();
+    }
+  </script>
+</body>
+</html>
